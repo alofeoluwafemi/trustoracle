@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/alofeoluwafemi/klay-oracle/node/klocaccount"
-	"github.com/klaytn/klaytn/accounts"
-	"github.com/klaytn/klaytn/accounts/keystore"
+	"github.com/alofeoluwafemi/trustoracle/node/klocaccount"
+	"github.com/ethereum/go-ethereum/accounts"
+	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/spf13/cobra"
 	"log"
 	"os"
@@ -46,10 +46,10 @@ func newKeyStore() *cobra.Command {
 				log.Println("Using existing account...")
 
 				account, _ = klocaccount.LoadAccount()
-			}else{
+			} else {
 				log.Println("Generating new account...")
 
-				ks := keystore.NewKeyStore(keyStorePath,keystore.StandardScryptN, keystore.StandardScryptP)
+				ks := keystore.NewKeyStore(keyStorePath, keystore.StandardScryptN, keystore.StandardScryptP)
 
 				account, err = ks.NewAccount(password)
 				if err != nil {
@@ -59,12 +59,12 @@ func newKeyStore() *cobra.Command {
 			}
 
 			nodeAddress := account.Address.String()
-			faucetUrl := "https://baobab.wallet.klaytn.foundation/faucet"
+			faucetUrl := "https://faucet.testnet-dev.trust.one/"
 
 			log.Println("Wallet successfully created.")
 			log.Printf("Node wallet address %v. \nVisit %v to fund your node before your node can fufill Oracle request\n", nodeAddress, faucetUrl)
 		},
 	}
 
-	return  cmd
+	return cmd
 }

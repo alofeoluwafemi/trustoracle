@@ -3,13 +3,13 @@ package node
 import (
 	"context"
 	"fmt"
-	"github.com/alofeoluwafemi/klay-oracle/node/klocaccount"
-	"github.com/alofeoluwafemi/klay-oracle/node/klocclient"
-	"github.com/alofeoluwafemi/klay-oracle/node/klocoracle"
+	"github.com/alofeoluwafemi/trustoracle/node/klocaccount"
+	"github.com/alofeoluwafemi/trustoracle/node/klocclient"
+	"github.com/alofeoluwafemi/trustoracle/node/klocoracle"
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/go-resty/resty/v2"
-	"github.com/klaytn/klaytn"
-	"github.com/klaytn/klaytn/blockchain/types"
-	"github.com/klaytn/klaytn/common"
 	"log"
 	"math/rand"
 	"strconv"
@@ -31,7 +31,7 @@ func Boot(jobsPath string) {
 func Run() {
 	defer wg.Done()
 
-	wg.Add(len(Jobs))	//It will never be done anyways
+	wg.Add(len(Jobs)) //It will never be done anyways
 
 	for i := 0; i < len(Jobs); i++ {
 
@@ -58,27 +58,27 @@ func watch(job *Job) {
 	}
 
 	oracleAddress := common.HexToAddress(job.Oracle)
-	query := klaytn.FilterQuery{
+	query := ethereum.FilterQuery{
 		Addresses: []common.Address{oracleAddress},
 	}
 
 	logs := make(chan types.Log)
 	subscription, err := conn.SubscribeFilterLogs(context.Background(), query, logs)
 	if err != nil {
-		log.Printf("Oracle Subscription error: %v",err)
-		log.Printf("Skipping Oracle: %v",err)
+		log.Printf("Oracle Subscription error: %v", err)
+		log.Printf("Skipping Oracle: %v", err)
 	}
 
 	for {
 		select {
 		case err := <-subscription.Err():
-			log.Printf("Error while listening for Oracle %v event due to: %v",job.Oracle, err)
+			log.Printf("Error while listening for Oracle %v event due to: %v", job.Oracle, err)
 			watch(job)
 		case vLog := <-logs:
 			event, err := oracle.ParseNewOracleRequest(vLog)
 			if err != nil {
 				log.Printf("Error parsing event log: %v\n", err)
-			}else{
+			} else {
 				log.Printf("Calling Job of Adapter ID %v\n", event.AdapterId)
 				log.Printf("With Request ID %v\n", event.RequestId)
 
@@ -88,18 +88,18 @@ func watch(job *Job) {
 					selected := jobResponses[randomIndex]
 
 					//Get mean and call oracle with response
-					fmt.Printf("\nResponse for Oracle %v\n",selected)
+					fmt.Printf("\nResponse for Oracle %v\n", selected)
 
 					_, trxOpts := klocaccount.LoadAccount()
 
 					var hexSelected string
 
-					intSelected, err := strconv.ParseInt(selected,10, 64)
+					intSelected, err := strconv.ParseInt(selected, 10, 64)
 					if err != nil {
-						log.Printf("Error parsing voted result %v due to %v\n", selected,  err)
+						log.Printf("Error parsing voted result %v due to %v\n", selected, err)
 
 						hexSelected = strconv.FormatInt(0, 16)
-					}else{
+					} else {
 						hexSelected = strconv.FormatInt(intSelected, 16)
 					}
 
@@ -108,8 +108,8 @@ func watch(job *Job) {
 					trx, err := oracle.FulfillOracleRequest(trxOpts, event.RequestId, data)
 					if err != nil {
 						log.Printf("Error Fulfilling OracleRequest %v with data %v. reason %v\n", job.Oracle, data, err.Error())
-					}else{
-						log.Printf("Node called Oracle %v with result %v and data %v\n",job.Oracle, selected, data)
+					} else {
+						log.Printf("Node called Oracle %v with result %v and data %v\n", job.Oracle, selected, data)
 						log.Printf("Transaction Hash %v, Nonce %v\n", trx.Hash().Hex(), trx.Nonce())
 						log.Printf("Transaction Data %v\n", trx.Data())
 					}
@@ -171,14 +171,14 @@ func (job Job) process() []string {
 
 			body = fmt.Sprintf("%v", response)
 
-			log.Printf("Result for %v -> %+v : %v", job.Name, reducer , body)
+			log.Printf("Result for %v -> %+v : %v", job.Name, reducer, body)
 		}
 
 		results = append(results, body)
 
 	}
 
-	log.Printf("Results for adapter %v are : %+v", job.AdapterId, results )
+	log.Printf("Results for adapter %v are : %+v", job.AdapterId, results)
 
 	return results
 }

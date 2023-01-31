@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/alofeoluwafemi/klay-oracle/node/klocaccount"
+	"github.com/alofeoluwafemi/trustoracle/node/klocaccount"
 	"github.com/spf13/cobra"
 	"log"
 )
@@ -21,9 +21,9 @@ func accountInfo() *cobra.Command {
 
 			log.Printf("Balance: %v\n", balance)
 
-			log.Printf("View on explorer %v/%v?tabId=txList","https://baobab.scope.klaytn.com/account",account.Address.String())
+			log.Printf("View on explorer %v/%v?tabId=txList", "https://baobab.scope.klaytn.com/account", account.Address.String())
 		},
 	}
 
-	return  cmd
+	return cmd
 }

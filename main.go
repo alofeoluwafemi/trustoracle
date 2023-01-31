@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/alofeoluwafemi/klay-oracle/node"
+	"github.com/alofeoluwafemi/trustoracle/node"
 	"github.com/joho/godotenv"
 	"log"
 	"os"

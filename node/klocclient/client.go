@@ -1,17 +1,18 @@
 package klocclient
 
 import (
-	"github.com/klaytn/klaytn/client"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"log"
 	"os"
 )
 
 const (
-	ChainId = 1001
-	RPCUrl = "wss://api.baobab.klaytn.net:8652"
+	ChainId = 15555
+	RPCUrl  = "https://api.testnet-dev.trust.one" // wss://api.baobab.klaytn.net:8652
 )
-func Connection() *client.Client {
-	conn, err := client.Dial(RPCUrl)
+
+func Connection() *ethclient.Client {
+	conn, err := ethclient.Dial(RPCUrl)
 	if err != nil {
 		log.Print(err)
 		os.Exit(1)

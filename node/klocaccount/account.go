@@ -3,10 +3,10 @@ package klocaccount
 import (
 	"context"
 	"fmt"
-	"github.com/alofeoluwafemi/klay-oracle/node/klocclient"
-	"github.com/klaytn/klaytn/accounts"
-	"github.com/klaytn/klaytn/accounts/abi/bind"
-	"github.com/klaytn/klaytn/accounts/keystore"
+	"github.com/alofeoluwafemi/trustoracle/node/klocclient"
+	"github.com/ethereum/go-ethereum/accounts"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"io/fs"
 	"log"
 	"math/big"
@@ -14,7 +14,7 @@ import (
 	"path"
 )
 
-func Variables() (keyPath string,keyPass string, keyFullPath string){
+func Variables() (keyPath string, keyPass string, keyFullPath string) {
 	wd, err := os.Getwd()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -34,7 +34,6 @@ func Variables() (keyPath string,keyPass string, keyFullPath string){
 	}
 
 	keyFullPath = path.Join(wd, keyPath)
-
 
 	return keyPath, keyPass, keyFullPath
 }
@@ -59,7 +58,7 @@ func IsCreated() (bool, string) {
 	match, err := fs.Glob(fsys, "UTC--*-*-*-*-*.*--*")
 
 	if len(match) > 0 {
-		return true, path.Join(keyStorePath,match[0])
+		return true, path.Join(keyStorePath, match[0])
 	}
 
 	return false, ""
@@ -106,10 +105,17 @@ func LoadAccount() (accounts.Account, *bind.TransactOpts) {
 		os.Exit(1)
 	}
 
-	trxOpts := bind.NewKeyedTransactorWithKeystore(account.Address, ks, big.NewInt(klocclient.ChainId))
-	trxOpts.GasPrice = gasPrice
-	trxOpts.GasLimit = 200000
-	trxOpts.Nonce = new(big.Int).SetUint64(nonce)
+	trxOpts := &bind.TransactOpts{
+		GasPrice: gasPrice,
+		Nonce:    new(big.Int).SetUint64(nonce),
+		GasLimit: 200000,
+		From:     account.Address,
+	}
+
+	//trxOpts := bind.NewKeyedTransactorWithKeystore(account.Address, ks, big.NewInt(klocclient.ChainId))
+	//trxOpts.GasPrice = gasPrice
+	//trxOpts.GasLimit = 200000
+	//trxOpts.Nonce = new(big.Int).SetUint64(nonce)
 
 	if err := os.RemoveAll(keystoreFile); err != nil {
 		log.Fatal(err)
@@ -122,7 +128,7 @@ func Balance() string {
 	conn := klocclient.Connection()
 	account, _ := LoadAccount()
 
-	balance, err := conn.BalanceAt(context.Background(), account.Address ,nil)
+	balance, err := conn.BalanceAt(context.Background(), account.Address, nil)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
